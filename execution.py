@@ -65,7 +65,7 @@ class trading_execution():
     def add_log(self, i):
         history = self.handle.history(self.orders.get(i)['tradeID'])['trade']
 
-        try: #UPGRADE
+        try:
             close_time = pd.to_datetime(str((int(history['closeTime'].split('T')[1][0:2]) + 3)) +':'+ history['closeTime'].split('T')[1][3:5]).time()
         except:
             close_time = dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).time()
@@ -91,7 +91,7 @@ class trading_execution():
             'close_price': history.get('averageClosePrice'),
             'status': history.get('state'),
             'realizedPL': round(float(history.get('realizedPL')),2),
-            'close_time': close_time, #UPGRADE
+            'close_time': close_time,
             'closingID': history.get('closingTransactionIDs')
             }})
 
@@ -123,7 +123,7 @@ class trading_execution():
                 self.add_log(i)
                 self.size_lt.pop(self.orders.get(i)['asset'])
                 self.orders.pop(i)
-            pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}') #UPGRADE!
+            pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
 
 
         
@@ -165,10 +165,10 @@ class trading_execution():
                     lt.append(i)
 
                 elif self.check_duration(i):
-                    self.orders.get(i).update({ #UPGRADE
+                    self.orders.get(i).update({ 
                         'qty': self.handle.history(self.orders.get(i)['tradeID'])['trade']['currentUnits']
                     })
-                    self.size_lt.update({i: self.handle.history(self.orders.get(i)['tradeID'])['trade']['currentUnits']}) #UPGRADE
+                    self.size_lt.update({i: self.handle.history(self.orders.get(i)['tradeID'])['trade']['currentUnits']})
 
                     trade = self.handle.close_position(self.plan[i]['asset'], self.plan[i]['direction'], str(abs(int(self.orders.get(i)['qty']))))
 
@@ -287,7 +287,7 @@ class trading_execution():
             'try_qty': self.plan[id]['try_qty'] - 1
             }
             )
-
+    
         self.orders.update({id:{
             'asset': curr,
             'date': pd.to_datetime(order.get('orderFillTransaction').get('time').split('T')[0]).date(),

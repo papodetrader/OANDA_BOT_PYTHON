@@ -36,7 +36,7 @@ def read_variables():
     except:
         size_lt = {}
 
-    print(pd.DataFrame(orders.values(), orders.keys()))
+
     if len(orders.keys()) > 0:
         orders_ = pd.DataFrame(orders.values(), orders.keys()).index.value_counts()
         for i in range(len(orders_)):
@@ -44,16 +44,21 @@ def read_variables():
                 plan.get(orders_.index[i]).update({'try_qty': plan.get(orders_.index[i])['try_qty']-orders_.iloc[i]})
 
     if len(trades.keys()) > 0:
-        trades_ = pd.DataFrame(trades.values(), trades.keys()).set_index('plan_key').index.value_counts()
+        trades_ = pd.DataFrame(trades.values(), trades.keys())
+        trades_ = trades_[trades_.date == dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()]
+        trades = pd.DataFrame.to_dict(trades_, orient='index')
+        trades_ = trades_.set_index('plan_key').index.value_counts()
         for i in range(len(trades_)):
             if trades_.index[i] in plan.keys():
                 plan.get(trades_.index[i]).update({'try_qty': plan.get(trades_.index[i])['try_qty']-trades_.iloc[i]})
-
-
+        
+        
     print(pd.DataFrame(plan.values(), plan.keys()))
 
     return plan, size_lt, trades, orders
 
 
+
 plan, size_lt, trades, orders = read_variables()
 execution = trading_execution(plan, size_lt, trades, orders)
+
