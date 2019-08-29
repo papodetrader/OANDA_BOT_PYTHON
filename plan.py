@@ -75,23 +75,45 @@ class build_plan:
 
                         data = data.reset_index().rename({'index': 'date'}, axis=1).set_index(['date', 'asset'])
 
-                        db = db.reset_index().set_index(['date', 'asset'])
-
-                        df = pd.concat([db, data], sort=True).drop_duplicates()
+                       if len(db) > 1:
+                                db = db.reset_index().set_index(['date', 'asset'])
+                                df = pd.concat([db, data], sort=True).drop_duplicates()
 
                         df = df.reset_index().set_index('date')
-                        pd.DataFrame.sort_index(df, inplace=True)
-                        df.to_pickle('./../DATA/OANDA') #UP-
+        
+                        self._remove_duplicated(df)
 
-                        ind.indicador(df)
+
+
+        def _remove_duplicated(self, df):
+    
+                df = df.reset_index()
+                db = pd.DataFrame()
+
+                for i in df.asset.unique():
+                        data = df[df.asset == i]      
+                        pd.DataFrame.drop_duplicates(data, subset='date', inplace=True)  
+                        db = pd.concat([db, data], sort=True)
+
+                db = db.set_index('date')
+
+                pd.DataFrame.sort_index(db, inplace=True)
+
+                db = db[db.index < sorted(db.index.unique())[-1]]
+                db = db.dropna()
+
+                db.to_pickle('./../DATA/OANDA') 
+
+
+                ind.indicador(db)         
 
 
         def run_daily(self):
                 self._get_new_data()
 
-                db = pd.read_pickle('./../DATA/OHLC_IND') #UP-
+                db = pd.read_pickle('./../DATA/OHLC_IND')
                 db = db.dropna()
-                db = db[db.index == db.index[-30]]
+                db = db[db.index == db.index[-1]]
 
                 ltm = db[db.asset.isin(trade_short)]
                 ltm['strat'] = 'trade_short'
