@@ -10,6 +10,13 @@ import datetime as dt
 import pickle
 from chart import chart
 
+import logging
+logging.basicConfig( filename= (f"./DATA/log/main_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
+                     filemode='w',
+                     level=logging.ERROR,
+                     format= '%(asctime)s - %(levelname)s - %(message)s',
+                     datefmt= "%Y-%m-%d %H:%M:%S"
+                   )
 
 
 class trading_execution():
@@ -67,7 +74,8 @@ class trading_execution():
 
         try:
             close_time = pd.to_datetime(str((int(history['closeTime'].split('T')[1][0:2]) + 3)) +':'+ history['closeTime'].split('T')[1][3:5]).time()
-        except:
+        except Exception as e:
+            logging.error(e)
             close_time = dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).time()
 
         self.trades.update({self.orders.get(i)['tradeID']:{
@@ -287,7 +295,7 @@ class trading_execution():
             'try_qty': self.plan[id]['try_qty'] - 1
             }
             )
-    
+
         self.orders.update({id:{
             'asset': curr,
             'date': pd.to_datetime(order.get('orderFillTransaction').get('time').split('T')[0]).date(),

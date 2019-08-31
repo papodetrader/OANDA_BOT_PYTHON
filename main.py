@@ -12,12 +12,6 @@ import pytz
 import warnings
 warnings.filterwarnings("ignore")
 
-import logging
-logging.basicConfig( filename= (f"./DATA/log/main_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
-                     filemode='w',
-                     level=logging.ERROR,
-                     format= '%(asctime)s - %(levelname)s - %(message)s',
-                   )
 
 while True:
 
