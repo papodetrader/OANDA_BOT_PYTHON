@@ -11,7 +11,7 @@ import pickle
 from chart import chart
 
 import logging
-logging.basicConfig( filename= (f"./DATA/log/main_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
+logging.basicConfig( filename= (f"./DATA/log/execution_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
                      filemode='w',
                      level=logging.ERROR,
                      format= '%(asctime)s - %(levelname)s - %(message)s',
@@ -59,6 +59,7 @@ class trading_execution():
 
 
     def check_duration(self, i):
+        
         order_time = self.time_to_minutes(self.orders.get(i)['entry_time']) 
         duration = self.time_to_minutes(self.plan.get(i)['duration']) 
 
@@ -70,12 +71,13 @@ class trading_execution():
 
 
     def add_log(self, i):
+        
         history = self.handle.history(self.orders.get(i)['tradeID'])['trade']
 
         try:
             close_time = pd.to_datetime(str((int(history['closeTime'].split('T')[1][0:2]) + 3)) +':'+ history['closeTime'].split('T')[1][3:5]).time()
         except Exception as e:
-            logging.error(e)
+            logging.error(str(e) + f' error on add_log for {self.orders.get(i)} \n')
             close_time = dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).time()
 
         self.trades.update({self.orders.get(i)['tradeID']:{
@@ -222,13 +224,14 @@ class trading_execution():
 
         if type == 'day':
             target = (self.plan[id]['profit'][0] / 10) * self.plan[id]['atr']
-            stop_price = (self.plan[id]['profit'][0] / 10) * self.plan[id]['atr']
+            stop_price = (self.plan[id]['stop'][0] / 10) * self.plan[id]['atr']
 
         else:
             target_df = self.handle.candle_data(curr, self.plan[id]['profit'][1], self.plan[id]['profit'][2] + 1 )
-
             target = self.ind.ATR(target_df, self.plan[id]['profit'][2], self.plan[id]['profit'][0])
-            stop_price = self.ind.ATR(target_df, self.plan[id]['stop'][2], self.plan[id]['stop'][0])
+
+            stop_df = self.handle.candle_data(curr, self.plan[id]['stop'][1], self.plan[id]['stop'][2] + 1 )
+            stop_price = self.ind.ATR(stop_df, self.plan[id]['stop'][2], self.plan[id]['stop'][0])
 
         return target, stop_price
 
@@ -311,5 +314,5 @@ class trading_execution():
 
         pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
 
-        chart(self.plan, id, curr, self.current_time(), dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date())
+        chart(self.plan, id, curr, (self.current_time()+100), dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date())
 

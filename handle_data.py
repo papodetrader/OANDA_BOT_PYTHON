@@ -11,6 +11,7 @@ import oandapyV20.endpoints.orders as orders
 import oandapyV20.endpoints.accounts as accounts
 import oandapyV20.endpoints.positions as positions
 import oandapyV20.endpoints.forexlabs as labs
+import datetime as dt
 
 
 api = API(access_token=ACCESS_TOKEN, environment=ENVIRONMENT)
@@ -61,28 +62,45 @@ class handler:
 
 
 
-    def candle_data(self, symbol, size_in_minutes, count):
+    def candle_data(self, symbol, size_in_minutes, count, from_dt='', to_dt= dt.datetime.now() - dt.timedelta(hours=3), use=''):
         """ Candle data for symbols """
         
-        params = {"count": count,
-          "granularity": self.getGranularity(size_in_minutes),
-            "alignmentTimezone": "Europe/Moscow", #UP-
-          }
-        
-        r = instruments.InstrumentsCandles(instrument=symbol,
-                                   params=params)
+        to_dt = str(to_dt.date()) + 'T' + str(to_dt.time()) + 'Z'
+    
+        params = {
+            "granularity": self.getGranularity(size_in_minutes),
+            "to": to_dt
+        }
+
+        if from_dt != '':
+            from_dt = str(from_dt.date()) + 'T' + str(from_dt.time()) + 'Z'
+            params.update({'from': from_dt})
+        elif from_dt == '':
+            params.update({'count': count})
+
+
+        r = instruments.InstrumentsCandles(instrument=symbol, params=params)
+
         data = api.request(r)
+
         clean = [{'time':i['time'],"open":i['mid']['o'],
-             "close":i['mid']['c'],'high':i['mid']['h'],
-             'low':i['mid']['l']} for i in data['candles']]
-        
+                "close":i['mid']['c'],'high':i['mid']['h'],
+                'low':i['mid']['l']} for i in data['candles']]
+
         df = pd.DataFrame(clean)
         df.set_index('time',inplace=True)
-        df.index = [ parse(i).strftime('%Y-%m-%d %H:%M:%S') for i in df.index ]
+
+        if use == 'plan':
+            df.index = [ parse(i).strftime('%Y-%m-%d') for i in df.index ] 
+        else:
+            df.index = [ parse(i).strftime('%Y-%m-%d %H:%M:%S') for i in df.index ]
+
         df.index = pd.to_datetime(df.index)
-        
-        df = df.convert_objects(convert_numeric=True)
-        df['Asset'] = symbol
+
+        df.index = pd.to_datetime(df.index)
+        df[df.columns] = df[df.columns].apply(pd.to_numeric)
+
+        df['asset'] = symbol
 
         return df
 
