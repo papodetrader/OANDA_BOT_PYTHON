@@ -9,6 +9,7 @@ import pytz
 import datetime as dt
 import pickle
 from chart import chart
+from calendario import cal_list
 
 import logging
 logging.basicConfig( filename= (f"./DATA/log/execution_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
@@ -88,6 +89,8 @@ class trading_execution():
             'stop': self.orders.get(i)['stop'],
             'target': self.orders.get(i)['target'],
             'entry_time': self.orders.get(i)['entry_time'],
+            'intraday_strat': self.orders.get(i)['intraday_strat'],
+            'events': self.orders.get(i)['events'],
 
             'plan_key': i,
             'asset': self.plan.get(i)['asset'],
@@ -239,10 +242,12 @@ class trading_execution():
 
     def condition(self, id, curr):
 
+        strat = self.strat.master(id, self.plan[id]['strat_cond'])
+
         if ((self.plan[id]['try_qty'] >= 1) and 
             ((self.current_time() > self.plan[id]['start'] and self.current_time() < self.plan[id]['break_start']) 
             or (self.current_time() < self.plan[id]['end'] and self.current_time() > self.plan[id]['break_end'])) and 
-            self.strat.master(id, self.plan[id]['strat_cond']) and (id not in self.orders.keys())): 
+            strat[0] == 'True' and (id not in self.orders.keys())): 
 
             target, stop_price = self.exit_calc(curr, id, self.plan[id]['profit'][3])
             current_price =  self.handle.candle_data(curr, 1, 1).close.values[0]
@@ -270,28 +275,32 @@ class trading_execution():
                         size = small -1
             
             if size >= 1:
-                return self.order_execution(curr, direction, size, target, stop, id, current_price, digits)
+                return self.order_execution(curr, direction, size, target, stop, id, current_price, digits, strat[1])
         
 
 
-    def order_execution(self, curr, direction, size, target, stop, id, current_price, digits):
+    def order_execution(self, curr, direction, size, target, stop, id, current_price, digits, strat):
         if direction == 'sell':
             size = -size
 
         order = self.handle.order(curr, size, target, stop)
 
-        if 'tradeOpened' in order.get('orderFillTransaction').keys():
-            if order.get('orderFillTransaction')['tradeOpened']['tradeID'] in self.handle.positions():
-                size = self.handle.history(order.get('orderFillTransaction')['tradeOpened']['tradeID'])['trade']['currentUnits']
-                self.size_lt.update({id : [curr, str(abs(int(size)))]})
+        try:
 
-                print(f"{id} {direction} {curr} at price: {round(current_price, digits)} , target: {round(target, digits)}, stop: {round(stop, digits)}, size: {size}")
+            if 'tradeOpened' in order.get('orderFillTransaction').keys():
+                if order.get('orderFillTransaction')['tradeOpened']['tradeID'] in self.handle.positions():
+                    size = self.handle.history(order.get('orderFillTransaction')['tradeOpened']['tradeID'])['trade']['currentUnits']
+                    self.size_lt.update({id : [curr, str(abs(int(size)))]})
 
-                return self.order_process(order, id, curr, size)
+                    print(f"{id} {direction} {curr} at price: {round(current_price, digits)} , target: {round(target, digits)}, stop: {round(stop, digits)}, size: {size}")
+
+                    return self.order_process(order, id, curr, size, strat)
             
+        except Exception as e:
+            logging.error(str(e) + f' error on processing order = {order}')
 
 
-    def order_process(self, order, id, curr, size):
+    def order_process(self, order, id, curr, size, strat):
 
         self.plan.get(id).update(
         {
@@ -309,6 +318,8 @@ class trading_execution():
             'target': order.get('orderCreateTransaction').get('takeProfitOnFill')['price'],
             'stop': order.get('orderCreateTransaction').get('stopLossOnFill')['price'],
             'margin': order.get('orderFillTransaction').get('tradeOpened')['initialMarginRequired'],
+            'intraday_strat': strat,
+            'events': cal_list(dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).time()),
             'unrealizedPL': 0,
         }})
 

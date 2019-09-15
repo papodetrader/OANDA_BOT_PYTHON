@@ -1,10 +1,26 @@
 # OANDA_BOT_PYTHON
 
-This one is fully working, probably some bug. I am leaving the whole day running and so far ok.
+strategy & indicat files most be setup by the user. There is some stuff there but just as sample of it.
 
-Even if I interrupt and run again still managing all trades open and running the plan
+The plan can be also setup easy with a dictionary as:
 
-Need to write the plan and select the indicators-strategy as added. 
+plan = {
+    'EUR_USD_0': {
+        atr = 0.00750
+        break_lunch = [1100, 1500]
+        trading_hours = [900, 1800]
+        profit = [5, 30, 100, 'day']
+        stop = [1.5, 30, 100, 'day']
+        duration = pd.to_datetime(30, unit='m').time()
+        try_qty = 3
+        direction = 'sell'
+        strat = {'strat5': 3}
+        strat_cond = 'and'
+        strat_name = 'trade_short'
+        size = 100
+    }
+}
+
 
 Anyone can add conditions to the strategy and indicators to run any new strategy.
 

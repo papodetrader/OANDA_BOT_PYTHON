@@ -38,10 +38,10 @@ def read_variables():
 
 
     if len(orders.keys()) > 0:
-        orders_ = pd.DataFrame(orders.values(), orders.keys()) #UPGRADE .index.value_counts()
-        orders_ = orders_[orders_.date == dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()] #UPGRADE
-        orders = pd.DataFrame.to_dict(orders_, orient='index') #UPGRADE
-        orders_ = orders_.index.value_counts() #UPGRADE
+        orders_ = pd.DataFrame(orders.values(), orders.keys()) 
+        orders_ = orders_[orders_.date == dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()] 
+        orders = pd.DataFrame.to_dict(orders_, orient='index')
+        orders_ = orders_.index.value_counts()
         for i in range(len(orders_)):
             if orders_.index[i] in plan.keys():
                 plan.get(orders_.index[i]).update({'try_qty': plan.get(orders_.index[i])['try_qty']-orders_.iloc[i]})

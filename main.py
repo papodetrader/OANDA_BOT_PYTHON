@@ -1,8 +1,7 @@
 from execution import trading_execution
 from plan import build_plan
-
+from calendario import calendar
 from variable import execution, plan, read_variables
-
 import os
 import time
 import datetime as dt
@@ -12,6 +11,8 @@ import pytz
 import warnings
 warnings.filterwarnings("ignore")
 
+calendar = calendar()
+print(calendar)
 
 while True:
 

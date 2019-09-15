@@ -12,7 +12,7 @@ import oandapyV20.endpoints.accounts as accounts
 import oandapyV20.endpoints.positions as positions
 import oandapyV20.endpoints.forexlabs as labs
 import datetime as dt
-
+import pytz
 
 api = API(access_token=ACCESS_TOKEN, environment=ENVIRONMENT)
 r = trades.TradesList(ACCOUNT_ID)
@@ -69,7 +69,8 @@ class handler:
     
         params = {
             "granularity": self.getGranularity(size_in_minutes),
-            "to": to_dt
+            "to": to_dt,
+            # 'alignmentTimezone': pytz.timezone('Europe/Moscow')
         }
 
         if from_dt != '':
