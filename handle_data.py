@@ -262,4 +262,3 @@ class handler:
             asset = 'USD' + '_' + asset.split('_')[1]
             return self.candle_data(asset, 1, 2).iloc[0].close
 
-

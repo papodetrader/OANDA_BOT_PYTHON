@@ -26,8 +26,7 @@ def read_variables():
         trades = {}
 
     try:
-        orders = [i for i in os.listdir('./DATA/orders/') if str(dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()) in i][0]
-        orders = pd.read_pickle(f'./DATA/orders/{orders}')
+        orders = pd.read_pickle(f'./orders')
     except:
         orders = {}
 
@@ -48,7 +47,7 @@ def read_variables():
 
     if len(trades.keys()) > 0:
         trades_ = pd.DataFrame(trades.values(), trades.keys())
-        trades_ = trades_[trades_.date == dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()]
+        trades_ = trades_[trades_.entry_date == dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()]
         trades = pd.DataFrame.to_dict(trades_, orient='index')
         trades_ = trades_.set_index('plan_key').index.value_counts()
         for i in range(len(trades_)):

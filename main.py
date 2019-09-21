@@ -14,6 +14,7 @@ warnings.filterwarnings("ignore")
 calendar = calendar()
 print(calendar)
 
+
 while True:
 
     starttime = time.time()
@@ -27,6 +28,7 @@ while True:
                 read_variables()
 
         else:
+
             for id in plan: 
                 curr = plan[id]['asset']
                 

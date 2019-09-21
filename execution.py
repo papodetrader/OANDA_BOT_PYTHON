@@ -12,7 +12,7 @@ from chart import chart
 from calendario import cal_list
 
 import logging
-logging.basicConfig( filename= (f"./DATA/log/execution_{dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()}.log"),
+logging.basicConfig( filename= (f"./execution.log"),
                      filemode='w',
                      level=logging.ERROR,
                      format= '%(asctime)s - %(levelname)s - %(message)s',
@@ -82,7 +82,7 @@ class trading_execution():
             close_time = dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).time()
 
         self.trades.update({self.orders.get(i)['tradeID']:{
-            'date': self.orders.get(i)['date'],
+            'entry_date': self.orders.get(i)['date'],
             'margin': self.orders.get(i)['margin'],
             'entry_price': self.orders.get(i)['entry_price'],
             'qty': self.orders.get(i)['qty'],
@@ -110,9 +110,9 @@ class trading_execution():
 
         pd.to_pickle(self.trades, f'./DATA/trades/trades_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
 
-        print(pd.DataFrame(self.trades.values(), self.trades.keys())[['asset', 'close_time', 'direction',
-                                        'margin', 'plan_key', 'entry_price', 'qty', 'realizedPL',
-                                        'status', 'stop', 'strat', 'target', 'entry_time', 'close_price']])
+        print(pd.DataFrame(self.trades.values(), self.trades.keys())[['plan_key', 'asset', 'entry_date', 'entry_price',
+                                                                    'close_price', 'entry_time', 'close_time', 'qty', 
+                                                                    'intraday_strat', 'realizedPL']])
 
         
     def close_all(self):
@@ -134,15 +134,15 @@ class trading_execution():
         if len(lt) > 0:
             for i in lt:
                 self.add_log(i)
-                self.size_lt.pop(self.orders.get(i)['asset'])
+                self.size_lt.pop(i)
                 self.orders.pop(i)
-            pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
+            pd.to_pickle(self.orders, f'.orders')
 
 
         
-        print(pd.DataFrame(self.trades.values(), self.trades.keys())[['asset', 'close_time', 'direction',
-                                        'margin', 'plan_key', 'entry_price', 'qty', 'realizedPL',
-                                        'status', 'stop', 'strat', 'target', 'entry_time', 'close_price']])
+        print(pd.DataFrame(self.trades.values(), self.trades.keys())[['plan_key', 'asset', 'entry_date', 'entry_price',
+                                                                    'close_price', 'entry_time', 'close_time', 'qty', 
+                                                                    'intraday_strat', 'realizedPL']])
 
         print(f'\n Order Dictionary -> {pd.DataFrame(self.orders.values(), self.orders.keys())}')
 
@@ -153,7 +153,7 @@ class trading_execution():
         total_wait = next_day - now
         total_wait = (int(str(total_wait).split(' ')[2].split(':')[0]) * 3600) + (int(str(total_wait).split(' ')[2].split(':')[1]) * 60) + 60
 
-        print(f'\n !!! Daily Risk - Reward achieved or End of Day and will resume in {total_wait}!!!')    
+        print(f'\n !!! Daily Risk - Reward achieved or End of Day and will resume in {int(total_wait / 60)} minutes !!!')    
 
         time.sleep(total_wait)
 
@@ -193,7 +193,7 @@ class trading_execution():
                                 'unrealizedPL': round(float(self.handle.history(self.orders.get(i)['tradeID'])['trade'].get('unrealizedPL')),2),
                             })
 
-                    pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
+                    pd.to_pickle(self.orders, f'./orders')
 
             if len(lt) > 0:
                 for i in lt:
@@ -201,24 +201,29 @@ class trading_execution():
                     self.add_log(i)
                     self.size_lt.pop(i)
                     self.orders.pop(i)
-                pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
+                pd.to_pickle(self.orders, f'./orders')
 
             print('\n', pd.DataFrame(self.orders.values(), self.orders.keys()))
 
 
         if self.trades == {}:
-            log_pl = 0
+            closed_pl = 0
         else:
-            log_pl = sum(pd.DataFrame(self.trades.values(), self.trades.keys())['realizedPL'])
+            closed_pl = sum(pd.DataFrame(self.trades.values(), self.trades.keys())['realizedPL'])
 
-            print('\n', pd.DataFrame(self.trades.values(), self.trades.keys())[['asset', 'close_time', 'direction',
-                                                                    'margin', 'plan_key', 'entry_price', 'qty', 'realizedPL',
-                                                                    'status', 'stop', 'strat', 'target', 'entry_time', 'close_price']])
+            print('\n', pd.DataFrame(self.trades.values(), self.trades.keys())[['plan_key', 'asset', 'entry_date', 'entry_price',
+                                                                                'close_price', 'entry_time', 'close_time', 'qty', 
+                                                                                'intraday_strat', 'realizedPL']])
 
-        if (orders_pl + log_pl) < (-1 * daily_risk):
+
+        if (orders_pl + closed_pl) < (-1 * daily_risk):
+            print(f'START CLOSE_ALL. Open Orders = {orders_pl}, Closed Orders = {closed_pl}, Daily Risk = {daily_risk}')
+
             self.close_all()
 
-        elif (orders_pl + log_pl) > (3 * daily_risk):
+        elif (orders_pl + closed_pl) > (3 * daily_risk):
+            print(f'START CLOSE_ALL. Open Orders = {orders_pl}, Closed Orders = {closed_pl}, Daily Risk = {daily_risk}')
+
             self.close_all()
 
         
@@ -319,11 +324,11 @@ class trading_execution():
             'stop': order.get('orderCreateTransaction').get('stopLossOnFill')['price'],
             'margin': order.get('orderFillTransaction').get('tradeOpened')['initialMarginRequired'],
             'intraday_strat': strat,
-            'events': cal_list(dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).time()),
+            'events': cal_list(dt.datetime.now(tz=pytz.timezone("Europe/Moscow"))),
             'unrealizedPL': 0,
         }})
 
-        pd.to_pickle(self.orders, f'./DATA/orders/orders_{dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date()}')
+        pd.to_pickle(self.orders, f'./orders')
 
         chart(self.plan, id, curr, (self.current_time()+100), dt.datetime.now(tz=pytz.timezone("Europe/Moscow")).date())
 
