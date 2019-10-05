@@ -53,14 +53,27 @@ def read_variables():
         for i in range(len(trades_)):
             if trades_.index[i] in plan.keys():
                 plan.get(trades_.index[i]).update({'try_qty': plan.get(trades_.index[i])['try_qty']-trades_.iloc[i]})
+
+    x = {}
+    for i in plan:
+        for ii in plan.get(i)['strat'].keys():
+            if plan.get(i)['asset'] in x.keys():
+                x.get(plan.get(i)['asset']).add((plan.get(i)['strat'][ii]))
+            else:
+                x.update({plan.get(i)['asset']: set([plan.get(i)['strat'][ii]])})
         
+        x.get(plan.get(i)['asset']).add((plan.get(i)['profit'][1]))
+        x.get(plan.get(i)['asset']).add((plan.get(i)['stop'][1]))
 
-    print(pd.DataFrame(plan.values(), plan.keys()))
-
-    return plan, size_lt, trades, orders
+    x = [(sublist, item) for sublist in x.keys() for item in x.get(sublist)]
 
 
+    print('\n', pd.DataFrame(plan.values(), plan.keys()))
 
-plan, size_lt, trades, orders = read_variables()
-execution = trading_execution(plan, size_lt, trades, orders)
+    return plan, size_lt, trades, orders, x
+
+
+
+plan, size_lt, trades, orders, x = read_variables()
+execution = trading_execution(plan, size_lt, trades, orders, x)
 

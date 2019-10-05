@@ -12,7 +12,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 calendar = calendar()
-print(calendar)
+print('\n', calendar[0])
+print('\n', calendar[1], '\n')
 
 
 while True:
@@ -27,8 +28,10 @@ while True:
                 build_plan().run_daily()
                 read_variables()
 
-        else:
+        elif execution.current_time() > max(pd.DataFrame(plan.values(), plan.keys()).end)+300 or execution.current_time() > 2200:
+            execution.close_all()
 
+        else:
             for id in plan: 
                 curr = plan[id]['asset']
                 
@@ -36,11 +39,11 @@ while True:
             
             execution.day_mgt()
 
-        print(f'stopped for {round((60.0 - ((time.time() - starttime) % 60.0)),2)} seconds at {str(execution.current_time())[:-2]+":"+str(execution.current_time())[-2:]} \n')
+        print(f'stopped for {int((60.0 - ((time.time() - starttime) % 60.0)))} seconds at {str(execution.current_time())[:-2]+":"+str(execution.current_time())[-2:]} \n')
         time.sleep(60.0 - ((time.time() - starttime) % 60.0))
 
     else:
-        print(f'stopped for {round((3600.1 - ((time.time() - starttime) % 60.0)),2)} seconds at {str(execution.current_time())[:-2]+":"+str(execution.current_time())[-2:]} \n')
+        print(f'stopped for {int((3600.1 - ((time.time() - starttime) % 60.0)))} seconds at {str(execution.current_time())[:-2]+":"+str(execution.current_time())[-2:]} \n')
         time.sleep(3600.1 - ((time.time() - starttime) % 60.0))
 
 

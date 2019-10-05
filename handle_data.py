@@ -257,8 +257,10 @@ class handler:
             return 1
         elif asset.split('_')[1] in ['AUD', 'GBP', 'EUR']:
             asset = asset.split('_')[1] + '_' + 'USD'
-            return self.candle_data(asset, 1, 2).iloc[0].close
+            x = 1 / self.candle_data(asset, 1, 2).iloc[0].close
+            return x
         else:
             asset = 'USD' + '_' + asset.split('_')[1]
             return self.candle_data(asset, 1, 2).iloc[0].close
+
 
