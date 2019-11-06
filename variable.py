@@ -14,7 +14,7 @@ def read_variables():
         plan = [i for i in os.listdir('./DATA/plan/') if str(dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()) in i][0]
         plan = pd.read_pickle(f'./DATA/plan/{plan}')
     except:
-        build_plan().run_daily()
+        build_plan()._get_new_data() #.run_daily()
         plan = [i for i in os.listdir('./DATA/plan/') if str(dt.datetime.now(tz=pytz.timezone('Europe/Moscow')).date()) in i][0]
         plan = pd.read_pickle(f'./DATA/plan/{plan}')
 
@@ -76,4 +76,3 @@ def read_variables():
 
 plan, size_lt, trades, orders, x = read_variables()
 execution = trading_execution(plan, size_lt, trades, orders, x)
-
