@@ -1,3 +1,5 @@
+### THIS WILL NOT BE UPDATED ANY FURTHER - IS WORKING WITHOUT ANY MAJOR ISSUE AS KNOWLEDGED ###
+
 # OANDA_BOT_PYTHON
 
 strategy & indicat files most be setup by the user. There is some stuff there but just as sample of it.
