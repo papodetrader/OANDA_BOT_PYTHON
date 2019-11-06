@@ -65,7 +65,7 @@ class handler:
     def candle_data(self, symbol, size_in_minutes, count, from_dt='', to_dt= dt.datetime.now() - dt.timedelta(hours=3), use=''):
         """ Candle data for symbols """
         
-        to_dt = str(to_dt.date()) + 'T' + str(to_dt.time()) + 'Z'
+        to_dt = str(to_dt.date()) + 'T' + to_dt.strftime('%H:%M') + 'Z'
     
         params = {
             "granularity": self.getGranularity(size_in_minutes),
@@ -262,5 +262,3 @@ class handler:
         else:
             asset = 'USD' + '_' + asset.split('_')[1]
             return self.candle_data(asset, 1, 2).iloc[0].close
-
-
