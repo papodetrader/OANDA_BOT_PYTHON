@@ -2,6 +2,7 @@ import ta
 import pandas as pd
 import numpy as np
 from handle_data import handler
+import itertools
 
 class indicators:
     
@@ -50,10 +51,8 @@ class indicators:
         df.sort_index(inplace = True)
         df = df.reset_index() 
 
-        rsi_k = ta.stoch(df['high'], df['low'], df['close'], period)
-        rsi_k = rsi_k.iloc[-1]
-        rsi_d = ta.stoch_signal(df['high'], df['low'], df['close'], period, 3)
-        rsi_d = rsi_d.iloc[-1]
+        rsi_k = ta.stoch_signal(df['high'], df['low'], df['close'], period, 3).round()
+        rsi_d = rsi_k.rolling(3).mean().round()
 
-        return int(rsi_d), int(rsi_k)
 
+        return int(rsi_d.iloc[-1]), int(rsi_k.iloc[-1])
