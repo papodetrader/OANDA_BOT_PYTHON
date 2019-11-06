@@ -23,6 +23,18 @@ class strategy:
                     result.append(self.strategy1(id, 'strat1'))
                 elif i == 'strat2':
                     result.append(self.strategy2(id, 'strat2'))
+                elif i == 'strat3':
+                    result.append(self.strategy3(id, 'strat3'))
+                elif i == 'strat4':
+                    result.append(self.strategy4(id, 'strat4'))
+                elif i == 'strat5':
+                    result.append(self.strategy5(id, 'strat5'))
+                elif i == 'strat6':
+                    result.append(self.strategy6(id, 'strat6'))
+                elif i == 'strat7':
+                    result.append(self.strategy7(id, 'strat7'))
+                elif i == 'strat8':
+                    result.append(self.strategy8(id, 'strat8'))
 
 
             res = [i[0] for i in result]
@@ -39,6 +51,18 @@ class strategy:
                     result.append(self.strategy1(id, 'strat1'))
                 elif i == 'strat2':
                     result.append(self.strategy2(id, 'strat2'))
+                elif i == 'strat3':
+                    result.append(self.strategy3(id, 'strat3'))
+                elif i == 'strat4':
+                    result.append(self.strategy4(id, 'strat4'))
+                elif i == 'strat5':
+                    result.append(self.strategy5(id, 'strat5'))  
+                elif i == 'strat6':
+                    result.append(self.strategy6(id, 'strat6'))
+                elif i == 'strat7':
+                    result.append(self.strategy7(id, 'strat7'))
+                elif i == 'strat8':
+                    result.append(self.strategy8(id, 'strat8'))
 
 
             res = [i[0] for i in result]
